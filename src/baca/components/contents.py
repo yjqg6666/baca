@@ -84,16 +84,19 @@ class Image(SegmentWidget):
 
     def show_ansi_image(self):
         img = PILImage.open(io.BytesIO(self.ebook.get_img_bytestr(self.content)[1])).convert("RGB")
-        img_ansi = climage._toAnsi(
-            img,
-            # NOTE: -1 for precaution on rounding of screen width
-            oWidth=self.size.width - 1,
-            is_unicode=True,
-            color_type=climage.color_types.truecolor,
-            palette="default",
-        )
+        try:
+            img_ansi = climage._toAnsi(
+                img,
+                # NOTE: -1 for precaution on rounding of screen width
+                oWidth=self.size.width - 1,
+                is_unicode=True,
+                color_type=climage.color_types.truecolor,
+                palette="default",
+            )
+            self._renderable = Text.from_ansi(img_ansi)
+        except Exception as ex:
+            self._renderable = Text("INVALID_IMAGE {}".format(ex), justify="center")
         img.close()
-        self._renderable = Text.from_ansi(img_ansi)
         self.refresh(layout=True)
 
     # TODO: "Click ot Open" on mouse hover
